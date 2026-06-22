@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Adaptive Notion Tax Bracket Widget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           1. CORE DESIGN SYSTEMS & LIGHT THEME INITIALIZERS
+           ========================================================================== */
+        :root {
+            /* Canvas Background Palette */
+            --bg-canvas: transparent; /* Blends natively inside default spaces */
+            --bg-card: #ffffff;
+            
+            /* Text Systems */
+            --text-main: #1c1917;
+            --text-muted: #71717a;
+            
+            /* Component Boundaries & Accents */
+            --border-card: rgba(228, 228, 231, 0.6);
+            --bg-row-hover: #f4f4f5;
+            --bg-summary: #fafafa;
+            --border-summary: #f4f4f5;
+            
+            /* Status Indicators */
+            --badge-active-bg: #e6f7ed;
+            --badge-active-text: #10b981;
+            --badge-inactive-bg: #f4f4f5;
+            --badge-inactive-text: #71717a;
+            --badge-filled-bg: #e0f2fe;
+            --badge-filled-text: #0284c7;
+
+            /* Level Core Color Framework */
+            --level-1-color: #3b82f6;
+            --level-2-color: #f59e0b;
+            --level-3-color: #ec4899;
+
+            /* Interactive Inputs */
+            --black-cta: #18181b;
+            --black-cta-hover: #27272a;
+            --input-text: #ffffff;
+            --input-label: #a1a1aa;
+            --input-btn-bg: rgba(255, 255, 255, 0.08);
+            --input-btn-hover: rgba(255, 255, 255, 0.15);
+
+            /* Micro Animations */
+            --transition-warp: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-fluid: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ==========================================================================
+           2. DYNAMIC NOTION DARK MODE OVERRIDES (MATCHING image_709f4c.png)
+           ========================================================================== */
+        .dark-theme {
+            /* EXACT BACKGROUND COLOR MAPPED FROM image_709f4c.png */
+            --bg-canvas: #191919; 
+            
+            /* Floating Card Surfaces */
+            --bg-card: #202020;
+            --border-card: rgba(255, 255, 255, 0.07);
+            --bg-row-hover: #2c2c2c;
+            
+            /* Core Text Reflows */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            
+            /* Bottom Summary Toggles */
+            --bg-summary: #141414;
+            --border-summary: #252525;
+            
+            /* Standard Adaptive Badges */
+            --badge-inactive-bg: #2d2d2d;
+            --badge-inactive-text: #9ca3af;
+            --badge-active-bg: rgba(16, 185, 129, 0.15);
+            --badge-filled-bg: rgba(2, 132, 199, 0.15);
+
+            /* Repurposed Interactive Black Box Component */
+            --black-cta: #111111;
+            --black-cta-hover: #0a0a0a;
+            --input-text: #ffffff;
+            --input-label: #71717a;
+            --input-btn-bg: rgba(255, 255, 255, 0.04);
+            --input-btn-hover: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ==========================================================================
+           3. MASTER STRUCTURAL CONTAINER GRAPHICS
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Notion Buffer Node Safeguards */
+        .notion-viewport-buffer {
+            padding: 40px;
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .widget-anchor-container {
+            position: relative;
+            width: 360px;
+            display: flex;
+            flex-direction: column;
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: var(--transition-warp);
+        }
+
+        /* Core Card Object Construction Layout */
+        .dropdown-simulation-card {
+            background: var(--bg-card);
+            width: 100%;
+            border-radius: 28px;
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.02);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transform: translateZ(50px);
+            border: 1px solid var(--border-card);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        /* Architectural Level Container Items */
+        .bracket-row-item {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 16px;
+            border-radius: 20px;
+            transition: var(--transition-fluid);
+            position: relative;
+        }
+
+        .bracket-row-item:hover {
+            background: var(--bg-row-hover);
+        }
+
+        .row-top-split {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .row-left-content {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .row-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: var(--transition-fluid);
+        }
+
+        .bracket-row-item:hover .row-icon-wrapper {
+            color: var(--text-main);
+            transform: scale(1.05);
+        }
+
+        .row-meta-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .tier-title-label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+            transition: var(--transition-fluid);
+        }
+
+        .tier-calculation-subtext {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-top: 1px;
+        }
+
+        /* ==========================================================================
+           4. HORIZONTAL COMPLETION FILL BARS
+           ========================================================================== */
+        .level-progress-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(120, 120, 120, 0.15);
+            border-radius: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .level-progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 100px;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .fill-l1 { background: var(--level-1-color); box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
+        .fill-l2 { background: var(--level-2-color); box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
+        .fill-l3 { background: var(--level-3-color); box-shadow: 0 0 8px rgba(236, 72, 153, 0.3); }
+
+        /* Structural Status Badges */
+        .status-pill-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px 4px 8px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: var(--transition-fluid);
+        }
+
+        .status-pill-badge::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Pill State Color Render Engines */
+        .pill-active { background: var(--badge-active-bg); color: var(--badge-active-text); }
+        .pill-active::before { background: var(--badge-active-text); }
+
+        .pill-filled { background: var(--badge-filled-bg); color: var(--badge-filled-text); }
+        .pill-filled::before { background: var(--badge-filled-text); }
+
+        .pill-inactive { background: var(--badge-inactive-bg); color: var(--badge-inactive-text); }
+        .pill-inactive::before { background: var(--badge-inactive-text); }
+
+        /* Aggregate Output Metrics Summary Layout */
+        .total-output-summary-banner {
+            margin-top: 4px;
+            padding: 14px 20px;
+            background: var(--bg-summary);
+            border-radius: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border: 1px solid var(--border-summary);
+            transition: var(--transition-fluid);
+        }
+
+        .total-output-summary-banner span.calculated-bold-sum {
+            font-weight: 800;
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+
+        /* ==========================================================================
+           5. INTERACTIVE COMPONENT LAYER (THE BLACK CARD INPUT FIELD)
+           ========================================================================== */
+        .interactive-black-input-card {
+            background: var(--black-cta);
+            border-radius: 22px;
+            padding: 20px;
+            margin-top: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: var(--transition-fluid);
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .interactive-black-input-card:hover {
+            background: var(--black-cta-hover);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-vertical-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-grow: 1;
+        }
+
+        .input-stack-label {
+            font-size: 0.68rem;
+            color: var(--input-label);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 700;
+            transition: var(--transition-fluid);
+        }
+
+        /* Embedded Custom Numerical Input Field Configuration */
+        .native-embedded-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--input-text);
+            font-size: 1.35rem;
+            font-weight: 700;
+            width: 90%;
+            padding: 2px 0;
+            font-family: inherit;
+            transition: var(--transition-fluid);
+        }
+
+        .native-embedded-input::-webkit-outer-spin-button,
+        .native-embedded-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .native-embedded-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Inline Functional Navigation Indicator Ring */
+        .input-action-icon-hub {
+            color: var(--input-text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--input-btn-bg);
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            transition: var(--transition-fluid);
+        }
+
+        .interactive-black-input-card:hover .input-action-icon-hub {
+            background: var(--input-btn-hover);
+            transform: translateX(2px);
+        }
+
+        /* ==========================================================================
+           6. RESPONSIVE METRIC WRAPPERS
+           ========================================================================== */
+        @media (max-width: 480px) {
+            .notion-viewport-buffer {
+                padding: 16px;
+            }
+            .widget-anchor-container {
+                width: 100%;
+                transform: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="notion-viewport-buffer">
+        <div class="widget-anchor-container" id="warpSurface">
+            
+            <!-- Core Refactored Card System -->
+            <div class="dropdown-simulation-card">
+                
+                <!-- Level 1 Block ($1,000 - $2,000) -->
+                <div class="bracket-row-item" data-tier="1">
+                    <div class="row-top-split">
+                        <div class="row-left-content">
+                            <div class="row-icon-wrapper">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            </div>
+                            <div class="row-meta-text">
+                                <span class="tier-title-label">Level 1 Bracket (10%)</span>
+                                <span class="tier-calculation-subtext" id="calcTier1">Taxed: $0.00 (0% filled)</span>
+                            </div>
+                        </div>
+                        <span class="status-pill-badge pill-inactive" id="badgeTier1">Inactive</span>
+                    </div>
+                    <div class="level-progress-container">
+                        <div class="level-progress-bar-fill fill-l1" id="barTier1"></div>
+                    </div>
+                </div>
+
+                <!-- Level 2 Block ($2,000 - $6,000) -->
+                <div class="bracket-row-item" data-tier="2">
+                    <div class="row-top-split">
+                        <div class="row-left-content">
+                            <div class="row-icon-wrapper">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                            </div>
+                            <div class="row-meta-text">
+                                <span class="tier-title-label">Level 2 Bracket (12%)</span>
+                                <span class="tier-calculation-subtext" id="calcTier2">Taxed: $0.00 (0% filled)</span>
+                            </div>
+                        </div>
+                        <span class="status-pill-badge pill-inactive" id="badgeTier2">Inactive</span>
+                    </div>
+                    <div class="level-progress-container">
+                        <div class="level-progress-bar-fill fill-l2" id="barTier2"></div>
+                    </div>
+                </div>
+
+                <!-- Level 3 Block ($6,000 - $12,000) -->
+                <div class="bracket-row-item" data-tier="3">
+                    <div class="row-top-split">
+                        <div class="row-left-content">
+                            <div class="row-icon-wrapper">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                            </div>
+                            <div class="row-meta-text">
+                                <span class="tier-title-label">Level 3 Bracket (22%)</span>
+                                <span class="tier-calculation-subtext" id="calcTier3">Taxed: $0.00 (0% filled)</span>
+                            </div>
+                        </div>
+                        <span class="status-pill-badge pill-inactive" id="badgeTier3">Inactive</span>
+                    </div>
+                    <div class="level-progress-container">
+                        <div class="level-progress-bar-fill fill-l3" id="barTier3"></div>
+                    </div>
+                </div>
+
+                <!-- Global Effective Rate Banner Panel -->
+                <div class="total-output-summary-banner">
+                    <span>Effective Rate Blend</span>
+                    <span class="calculated-bold-sum" id="effectiveRateLabel">0.0%</span>
+                </div>
+
+                <!-- The Interactive Base Core Input Object -->
+                <div class="interactive-black-input-card">
+                    <div class="input-vertical-stack">
+                        <label for="bracketWalletInput" class="input-stack-label">Enter Total Income</label>
+                        <input type="number" id="bracketWalletInput" class="native-embedded-input" value="7500" min="0" max="50000" placeholder="0">
+                    </div>
+                    <div class="input-action-icon-hub">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+       7. NOTION CLIENT-SIDE AUTOMATED ENGINE & SIMULATION MATHEMATICS
+       ========================================================================== -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // DOM Target Interface Links
+            const walletInput = document.getElementById("bracketWalletInput");
+            const calcTier1 = document.getElementById("calcTier1");
+            const calcTier2 = document.getElementById("calcTier2");
+            const calcTier3 = document.getElementById("calcTier3");
+            const badgeTier1 = document.getElementById("badgeTier1");
+            const badgeTier2 = document.getElementById("badgeTier2");
+            const badgeTier3 = document.getElementById("badgeTier3");
+            const barTier1 = document.getElementById("barTier1");
+            const barTier2 = document.getElementById("barTier2");
+            const barTier3 = document.getElementById("barTier3");
+            const effectiveRateLabel = document.getElementById("effectiveRateLabel");
+            const warpSurface = document.getElementById("warpSurface");
+
+            /* Explicit Marginal Calculations Structure Map Limits:
+               Level 1 Range: $1,000 -> $2,000 (Size limit = $1,000)
+               Level 2 Range: $2,000 -> $6,000 (Size limit = $4,000)
+               Level 3 Range: $6,000 -> $12,000 (Size limit = $6,000)
+            */
+            const architecture = {
+                t1: { min: 1000, max: 2000, cap: 1000, rate: 0.10 },
+                t2: { min: 2000, max: 6000, cap: 4000, rate: 0.12 },
+                t3: { min: 6000, max: 12000, cap: 6000, rate: 0.22 }
+            };
+
+            /* ==========================================================================
+               A. EXPLICIT NOTION AUTOMATED ENVIRONMENT THEME SWAP ENGINE
+               ========================================================================== */
+            function coordinateNotionThemeSync() {
+                try {
+                    // Check 1: Parse the standard incoming Notion URL query parameters string array
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const queryTheme = urlParams.get('theme');
+
+                    // Check 2: Native device CSS level media queries standard defaults fallback
+                    const hardwarePrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                    if (queryTheme === 'dark' || (!queryTheme && hardwarePrefersDark)) {
+                        document.body.classList.add('dark-theme');
+                    } else {
+                        document.body.classList.remove('dark-theme');
+                    }
+                } catch (err) {
+                    console.warn("Theme synchronization vector interrupted:", err);
+                }
+            }
+
+            // Monitor standard URL changes or responsive parent systems message toggles 
+            coordinateNotionThemeSync();
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', coordinateNotionThemeSync);
+
+            /* ==========================================================================
+               B. CALCULATION PIPELINE LOGIC INTERFACE
+               ========================================================================== */
+            function executeTaxBracketSimulation() {
+                let income = parseFloat(walletInput.value);
+                if (isNaN(income) || income < 0) income = 0;
+
+                // Level 1 Processing Block
+                let allocatedT1 = 0;
+                if (income > architecture.t1.min) {
+                    allocatedT1 = Math.min(income - architecture.t1.min, architecture.t1.cap);
+                }
+                let taxT1 = allocatedT1 * architecture.t1.rate;
+                let pctT1 = (allocatedT1 / architecture.t1.cap) * 100;
+
+                // Level 2 Processing Block
+                let allocatedT2 = 0;
+                if (income > architecture.t2.min) {
+                    allocatedT2 = Math.min(income - architecture.t2.min, architecture.t2.cap);
+                }
+                let taxT2 = allocatedT2 * architecture.t2.rate;
+                let pctT2 = (allocatedT2 / architecture.t2.cap) * 100;
+
+                // Level 3 Processing Block
+                let allocatedT3 = 0;
+                if (income > architecture.t3.min) {
+                    allocatedT3 = Math.min(income - architecture.t3.min, architecture.t3.cap);
+                }
+                let taxT3 = allocatedT3 * architecture.t3.rate;
+                let pctT3 = (allocatedT3 / architecture.t3.cap) * 100;
+
+                // Combine Total Outlay Fees Metrics
+                let collectiveTaxFee = taxT1 + taxT2 + taxT3;
+                let effectiveBlendRate = income > 0 ? (collectiveTaxFee / income) * 100 : 0;
+
+                // Map Dynamic Data Rows Directly Under Subheadings
+                calcTier1.innerText = `Taxed: $${taxT1.toFixed(2)} ($${allocatedT1.toLocaleString(undefined, {maximumFractionDigits:0})} filled)`;
+                calcTier2.innerText = `Taxed: $${taxT2.toFixed(2)} ($${allocatedT2.toLocaleString(undefined, {maximumFractionDigits:0})} filled)`;
+                calcTier3.innerText = `Taxed: $${taxT3.toFixed(2)} ($${allocatedT3.toLocaleString(undefined, {maximumFractionDigits:0})} filled)`;
+
+                // Drive Horizontal Loading Bar Transitions Fluidly
+                barTier1.style.width = `${pctT1}%`;
+                barTier2.style.width = `${pctT2}%`;
+                barTier3.style.width = `${pctT3}%`;
+
+                effectiveRateLabel.innerText = `${effectiveBlendRate.toFixed(1)}%`;
+
+                // Set Dynamic Pill Badge Elements
+                updateBadgeStatus(badgeTier1, allocatedT1, architecture.t1.cap);
+                updateBadgeStatus(badgeTier2, allocatedT2, architecture.t2.cap);
+                updateBadgeStatus(badgeTier3, allocatedT3, architecture.t3.cap);
+            }
+
+            function updateBadgeStatus(badgeElement, allocatedAmount, totalCap) {
+                badgeElement.className = "status-pill-badge";
+
+                if (allocatedAmount === 0) {
+                    badgeElement.classList.add("pill-inactive");
+                    badgeElement.innerText = "Inactive";
+                } else if (allocatedAmount < totalCap) {
+                    badgeElement.classList.add("pill-active");
+                    badgeElement.innerText = "Active";
+                } else {
+                    badgeElement.classList.add("pill-filled");
+                    badgeElement.innerText = "Filled";
+                }
+            }
+
+            // Input Hook Event Observers
+            walletInput.addEventListener("input", executeTaxBracketSimulation);
+
+            /* ==========================================================================
+               C. PARALLAX 3D LAYER HOVER INTERACTIVITY
+               ========================================================================== */
+            let isMobileDevice = window.matchMedia("(hover: none)").matches;
+
+            if (!isMobileDevice) {
+                warpSurface.addEventListener("mousemove", (event) => {
+                    const boundingBox = warpSurface.getBoundingClientRect();
+                    const offsetX = event.clientX - boundingBox.left;
+                    const offsetY = event.clientY - boundingBox.top;
+                    
+                    const normalizedX = (offsetX / boundingBox.width) - 0.5;
+                    const normalizedY = (offsetY / boundingBox.height) - 0.5;
+                    
+                    const vectorRotateX = (-normalizedY * 8).toFixed(2);
+                    const vectorRotateY = (normalizedX * 8).toFixed(2);
+                    
+                    warpSurface.style.transform = `perspective(1000px) rotateX(${vectorRotateX}deg) rotateY(${vectorRotateY}deg) scale3d(1.005, 1.005, 1.005)`;
+                });
+
+                warpSurface.addEventListener("mouseleave", () => {
+                    warpSurface.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+                });
+            }
+
+            // Immediate Thread Calculation Initialization Execution
+            executeTaxBracketSimulation();
+        });
+    </script>
+</body>
+</html>
