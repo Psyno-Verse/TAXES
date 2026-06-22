@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>S-Corp Matrix Tracker</title>
+  <title>S-Corp Multi-Matrix Tracker</title>
   <style>
     /* Notion Page Theme Integration Variables */
     :root {
@@ -45,21 +45,78 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      padding: 20px;
       transition: background-color 0.3s ease;
+      overflow-x: hidden;
     }
 
-    /* Main Frame inspired by image_7eb70c.png - Shadows Lightened */
+    /* Horizontal Carousel Wrapper Container */
+    .matrix-container {
+      display: flex;
+      gap: 32px;
+      overflow-x: auto;
+      padding: 40px;
+      width: 100vw;
+      scroll-behavior: smooth;
+      align-items: flex-start;
+      justify-content: center; /* Balanced dynamically inside JS logic framework */
+      box-sizing: border-box;
+    }
+
+    /* Clean subtle Notion style scrollbars */
+    .matrix-container::-webkit-scrollbar {
+      height: 8px;
+    }
+    .matrix-container::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .matrix-container::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 10px;
+    }
+
+    /* Main Card Frame */
     .tracker-card {
       background-color: var(--card-bg);
-      width: 100%;
-      max-width: 450px;
+      flex: 0 0 430px; /* Rigid card width boundaries to support clean slider layout grid */
       border-radius: 32px;
       padding: 28px;
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15); /* Softer, lighter shadow drop */
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
       border: 1px solid var(--border-color);
       perspective: 1000px;
-      transition: transform 0.1s ease;
+      transition: transform 0.1s ease, opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* Isolated Spawning State - ONLY assigned to newly created elements */
+    .tracker-card.spawning {
+      animation: spawnWarp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes spawnWarp {
+      0% {
+        opacity: 0;
+        transform: scale(0.6) rotateY(-35deg) translateX(100px);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg) translateX(0);
+      }
+    }
+
+    /* Isolated Despawning State - ONLY assigned to exiting elements */
+    .tracker-card.despawning {
+      animation: despawnWarp 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      pointer-events: none;
+    }
+
+    @keyframes despawnWarp {
+      0% {
+        opacity: 1;
+        transform: scale(1) rotateY(0deg);
+      }
+      100% {
+        opacity: 0;
+        transform: scale(0.7) rotateY(35deg) translateX(120px);
+      }
     }
 
     .tracker-header {
@@ -71,7 +128,7 @@
 
     .tracker-title {
       color: var(--text-main);
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 700;
       letter-spacing: -0.5px;
     }
@@ -104,6 +161,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
+      min-height: 50px;
     }
 
     .expense-row {
@@ -113,7 +171,6 @@
       position: relative;
     }
 
-    /* UI Icon Container with Custom Tooltip Properties */
     .strategy-icon-wrapper {
       width: 46px;
       height: 46px;
@@ -136,10 +193,9 @@
     .strategy-icon-wrapper svg {
       width: 22px;
       height: 22px;
-      transition: fill 0.3s ease;
     }
 
-    /* ELI5 Tooltip Box styling - Shadow Lightened */
+    /* ELI5 Tooltip Box styling */
     .strategy-icon-wrapper::after {
       content: attr(data-tooltip);
       position: absolute;
@@ -157,7 +213,7 @@
       text-align: center;
       pointer-events: none;
       opacity: 0;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Softer drop shadow */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       transition: all 0.15s ease;
       z-index: 200;
     }
@@ -181,15 +237,6 @@
       transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease, box-shadow 0.3s ease;
     }
 
-    /* Enforce High Contrast White Text configurations */
-    .expense-subcard.business,
-    .expense-subcard.personal,
-    .expense-subcard.mixed,
-    .expense-subcard.w2,
-    .expense-subcard.unassigned {
-      color: #ffffff !important;
-    }
-
     .expense-subcard.unassigned { background-color: var(--subcard-default); }
     .expense-subcard.business { background-color: var(--color-business); }
     .expense-subcard.personal { background-color: var(--color-personal); }
@@ -210,7 +257,6 @@
       color: rgba(255, 255, 255, 0.55);
     }
 
-    /* Meta details row layout updates */
     .meta-row {
       display: flex;
       justify-content: space-between;
@@ -220,7 +266,6 @@
       font-weight: 500;
     }
 
-    /* Upgraded Money Input Box Container */
     .amount-box-wrapper {
       background: rgba(255, 255, 255, 0.15);
       padding: 4px 10px;
@@ -283,7 +328,7 @@
       height: 14px;
     }
 
-    /* Strategy Chooser Dialog Panel - Shadow Lightened */
+    /* Strategy Chooser Dialog Panel */
     .strategy-dialog {
       position: absolute;
       left: 0px;
@@ -296,8 +341,8 @@
       display: none;
       flex-direction: column;
       gap: 6px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.25); /* Toned down from heavy black drop */
-      width: 250px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+      width: 230px;
     }
 
     .strategy-dialog.active {
@@ -333,7 +378,6 @@
       border-radius: 50%;
     }
 
-    /* Interactive Hover State on Cards - Shadow Softened */
     .expense-subcard:hover {
       box-shadow: 0 8px 20px rgba(0,0,0,0.12);
     }
@@ -341,23 +385,12 @@
 </head>
 <body>
 
-  <div class="tracker-card" id="mainCard">
-    <div class="tracker-header">
-      <div class="tracker-title">S-Corp Matrix</div>
-      <button class="add-btn" id="addExpenseBtn">
-        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-      </button>
+  <div class="matrix-container" id="matrixWrapper">
     </div>
-
-    <div class="expense-list" id="expenseList">
-      <!-- Cards render programmatically here -->
-    </div>
-  </div>
 
   <script>
-    const expenseList = document.getElementById('expenseList');
-    const addExpenseBtn = document.getElementById('addExpenseBtn');
-    const mainCard = document.getElementById('mainCard');
+    const matrixWrapper = document.getElementById('matrixWrapper');
+    let expensesData = [];
 
     const ICONS = {
       unassigned: `<svg viewBox="0 0 24 24" fill="#888"><circle cx="12" cy="12" r="10" stroke="#888" stroke-width="2" fill="none"/><path d="M12 8v8M8 12h8" stroke="#888" stroke-width="2"/></svg>`,
@@ -368,95 +401,132 @@
     };
 
     const STRATEGIES = {
-      unassigned: { 
-        class: 'unassigned', 
-        icon: ICONS.unassigned, 
-        placeholder: 'What did you buy?',
-        tooltip: 'Tap me to pick what kind of expense this is!' 
-      },
-      business: { 
-        class: 'business', 
-        icon: ICONS.business, 
-        placeholder: 'e.g., Software, office materials, ads...',
-        tooltip: 'The company piggy bank pays for this completely because it helps your job make money!' 
-      },
-      personal: { 
-        class: 'personal', 
-        icon: ICONS.personal, 
-        placeholder: 'e.g., Groceries, fun trips, gym membership...',
-        tooltip: 'Your own personal pocket money pays for this because it is for fun, not for work!' 
-      },
-      mixed: { 
-        class: 'mixed', 
-        icon: ICONS.mixed, 
-        placeholder: 'e.g., Phone bill, home internet, business mileage...',
-        tooltip: 'Part for work and part for fun! We split the cost safely down the middle.' 
-      },
-      w2: { 
-        class: 'w2', 
-        icon: ICONS.w2, 
-        placeholder: 'e.g., Owner salary payment, payroll tax...',
-        tooltip: 'This is the special official paycheck reward your business gives you for working hard!' 
-      }
+      unassigned: { class: 'unassigned', icon: ICONS.unassigned, placeholder: 'What did you buy?', tooltip: 'Tap me to pick what kind of expense this is!' },
+      business: { class: 'business', icon: ICONS.business, placeholder: 'e.g., Software, office materials, ads...', tooltip: 'The company piggy bank pays for this completely because it helps your job make money!' },
+      personal: { class: 'personal', icon: ICONS.personal, placeholder: 'e.g., Groceries, fun trips, gym membership...', tooltip: 'Your own personal pocket money pays for this because it is for fun, not for work!' },
+      mixed: { class: 'mixed', icon: ICONS.mixed, placeholder: 'e.g., Phone bill, home internet, business mileage...', tooltip: 'Part for work and part for fun! We split the cost safely down the middle.' },
+      w2: { class: 'w2', icon: ICONS.w2, placeholder: 'e.g., Owner salary payment, payroll tax...', tooltip: 'This is the special official paycheck reward your business gives you for working hard!' }
     };
 
-    mainCard.addEventListener('mousemove', (e) => {
-      const rect = mainCard.getBoundingClientRect();
-      const x = e.clientX - rect.left - (rect.width / 2);
-      const y = e.clientY - rect.top - (rect.height / 2);
-      mainCard.style.transform = `rotateX(${-y * 0.025}deg) rotateY(${x * 0.025}deg)`;
-    });
-
-    mainCard.addEventListener('mouseleave', () => {
-      mainCard.style.transform = 'rotateX(0deg) rotateY(0deg)';
-    });
-
     function saveToLocalStorage() {
-      const rows = document.querySelectorAll('.expense-row');
-      const dataToSave = [];
-      
-      rows.forEach(row => {
-        const descInput = row.querySelector('.expense-input');
-        const amountInput = row.querySelector('.amount-input');
-        const subcard = row.querySelector('.expense-subcard');
-        
-        let strategyKey = 'unassigned';
-        for (const key in STRATEGIES) {
-          if (subcard.classList.contains(STRATEGIES[key].class)) {
-            strategyKey = key;
-            break;
-          }
-        }
-
-        dataToSave.push({
-          description: descInput.value,
-          amount: amountInput.value,
-          strategyKey: strategyKey
-        });
-      });
-
-      localStorage.setItem('scorp_matrix_expenses', JSON.stringify(dataToSave));
+      localStorage.setItem('scorp_matrix_expenses', JSON.stringify(expensesData));
     }
 
-    function createExpenseSubcard(description = '', amount = '', strategyKey = 'unassigned') {
+    function setupCard3D(card) {
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left - (rect.width / 2);
+        const y = e.clientY - rect.top - (rect.height / 2);
+        card.style.transform = `rotateX(${-y * 0.015}deg) rotateY(${x * 0.015}deg)`;
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+      });
+    }
+
+    // Advanced dynamic DOM syncing module layout mechanism
+    function renderStructure(forceAnimateLastCard = false) {
+      const itemsPerCard = 4;
+      const totalChunks = Math.max(1, Math.ceil(expensesData.length / itemsPerCard));
+
+      // 1. Structural alignment: Center if single card layout, switch to horizontal scroll grid when multiple
+      if (totalChunks === 1) {
+        matrixWrapper.style.justifyContent = 'center';
+      } else {
+        matrixWrapper.style.justifyContent = 'flex-start';
+      }
+
+      // 2. Lifecycle Audit: Track current card frames present inside the active screen view
+      let existingCards = matrixWrapper.querySelectorAll('.tracker-card:not(.despawning)');
+
+      // SPAWN: Append brand new shell card wrapper container if threshold exceeded
+      if (existingCards.length < totalChunks) {
+        for (let i = existingCards.length; i < totalChunks; i++) {
+          const newCard = document.createElement('div');
+          newCard.className = 'tracker-card spawning';
+          setupCard3D(newCard);
+          matrixWrapper.appendChild(newCard);
+          
+          // Clear animation constraints smoothly after visual entrance cycle complete
+          newCard.addEventListener('animationend', () => {
+            newCard.classList.remove('spawning');
+          });
+        }
+      } 
+      // DESPAWN: Transition cleanly away if space clears out completely
+      else if (existingCards.length > totalChunks) {
+        for (let i = existingCards.length - 1; i >= totalChunks; i--) {
+          const targetDespawnCard = existingCards[i];
+          targetDespawnCard.classList.add('despawning');
+          setTimeout(() => {
+            targetDespawnCard.remove();
+            if (matrixWrapper.querySelectorAll('.tracker-card:not(.despawning)').length === 1) {
+              matrixWrapper.style.justifyContent = 'center';
+            }
+          }, 400); // Strict alignment with CSS keyframe time loops
+        }
+      }
+
+      // 3. Update inner rows of the operational cards (Preserves 3D frame elements state to stop random triggers)
+      const operationalCards = matrixWrapper.querySelectorAll('.tracker-card:not(.despawning)');
+      operationalCards.forEach((cardElement, i) => {
+        cardElement.innerHTML = `
+          <div class="tracker-header">
+            <div class="tracker-title">S-Corp Matrix ${totalChunks > 1 ? `(${i + 1})` : ''}</div>
+            ${i === totalChunks - 1 ? `
+              <button class="add-btn" id="globalAddBtn">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+              </button>
+            ` : '<div></div>'}
+          </div>
+          <div class="expense-list"></div>
+        `;
+
+        const listContainer = cardElement.querySelector('.expense-list');
+        const chunkStartIndex = i * itemsPerCard;
+        const chunkEndIndex = Math.min(chunkStartIndex + itemsPerCard, expensesData.length);
+
+        for (let globalIdx = chunkStartIndex; globalIdx < chunkEndIndex; globalIdx++) {
+          appendExpenseItemDOM(listContainer, globalIdx);
+        }
+      });
+
+      // 4. Bind events exclusively to the newly generated header button node
+      const addBtn = document.getElementById('globalAddBtn');
+      if (addBtn) {
+        addBtn.onclick = () => {
+          expensesData.push({ description: '', amount: '', strategyKey: 'unassigned' });
+          saveToLocalStorage();
+          renderStructure(true);
+          
+          setTimeout(() => {
+            matrixWrapper.scrollLeft = matrixWrapper.scrollWidth;
+          }, 60);
+        };
+      }
+    }
+
+    // Appends rows seamlessly keeping global index map references linked flawlessly
+    function appendExpenseItemDOM(container, globalIdx) {
+      const itemData = expensesData[globalIdx];
       const row = document.createElement('div');
       row.className = 'expense-row';
 
       row.innerHTML = `
-        <div class="strategy-icon-wrapper" data-tooltip="${STRATEGIES[strategyKey].tooltip}">
-          ${STRATEGIES[strategyKey].icon}
+        <div class="strategy-icon-wrapper" data-tooltip="${STRATEGIES[itemData.strategyKey].tooltip}">
+          ${STRATEGIES[itemData.strategyKey].icon}
         </div>
         
-        <div class="expense-subcard ${STRATEGIES[strategyKey].class}">
+        <div class="expense-subcard ${STRATEGIES[itemData.strategyKey].class}">
           <button class="delete-card-btn" title="Delete Expense Allocation">
             <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
           </button>
-          <input type="text" class="expense-input" placeholder="${STRATEGIES[strategyKey].placeholder}" value="${description}">
+          <input type="text" class="expense-input" placeholder="${STRATEGIES[itemData.strategyKey].placeholder}" value="${itemData.description}">
           <div class="meta-row">
             <span>Strategy Classification</span>
             <div class="amount-box-wrapper">
               <span>$</span>
-              <input type="text" class="amount-input" placeholder="0.00" value="${amount}">
+              <input type="text" class="amount-input" placeholder="0.00" value="${itemData.amount}">
             </div>
           </div>
         </div>
@@ -484,16 +554,27 @@
       const amountInput = row.querySelector('.amount-input');
       const deleteBtn = row.querySelector('.delete-card-btn');
 
-      descInput.addEventListener('input', saveToLocalStorage);
-      amountInput.addEventListener('input', saveToLocalStorage);
+      // Update structural values inline to guarantee real-time saving without triggering full re-renders
+      descInput.addEventListener('input', () => {
+        expensesData[globalIdx].description = descInput.value;
+        saveToLocalStorage();
+      });
 
+      amountInput.addEventListener('input', () => {
+        expensesData[globalIdx].amount = amountInput.value;
+        saveToLocalStorage();
+      });
+
+      // Item Level Delete Sequence Action
       deleteBtn.addEventListener('click', () => {
         row.style.opacity = '0';
         row.style.transform = 'scale(0.8) translateY(-10px)';
         row.style.transition = 'all 0.2s ease';
+        
         setTimeout(() => {
-          row.remove();
+          expensesData.splice(globalIdx, 1);
           saveToLocalStorage();
+          renderStructure();
         }, 200);
       });
 
@@ -509,6 +590,9 @@
         option.addEventListener('click', () => {
           const strategy = option.getAttribute('data-strategy');
           
+          expensesData[globalIdx].strategyKey = strategy;
+          saveToLocalStorage();
+          
           subcard.className = 'expense-subcard';
           subcard.classList.add(STRATEGIES[strategy].class);
           descInput.placeholder = STRATEGIES[strategy].placeholder;
@@ -516,10 +600,10 @@
           iconWrapper.setAttribute('data-tooltip', STRATEGIES[strategy].tooltip);
           
           dialog.classList.remove('active');
-          saveToLocalStorage();
         });
       });
 
+      // Dynamic Subcard Hover Micro-Matrix Rotation Mechanics
       subcard.addEventListener('mousemove', (e) => {
         const bounds = subcard.getBoundingClientRect();
         const mouseX = e.clientX - bounds.left;
@@ -535,32 +619,24 @@
         subcard.style.transform = 'perspective(400px) scale(1) rotateY(0deg) rotateX(0deg)';
       });
 
-      expenseList.appendChild(row);
+      container.appendChild(row);
     }
 
     function initTracker() {
       const storedData = localStorage.getItem('scorp_matrix_expenses');
       
       if (storedData) {
-        const parsed = JSON.parse(storedData);
-        if (parsed.length > 0) {
-          parsed.forEach(item => {
-            createExpenseSubcard(item.description, item.amount, item.strategyKey);
-          });
-          return;
-        }
+        expensesData = JSON.parse(storedData);
+      } else {
+        expensesData = [
+          { description: 'Marketing Platform Subscription', amount: '120.00', strategyKey: 'business' },
+          { description: 'Client Dinner Consultation', amount: '85.00', strategyKey: 'mixed' },
+          { description: 'Personal Gym Membership', amount: '60.00', strategyKey: 'personal' }
+        ];
+        saveToLocalStorage();
       }
-      
-      createExpenseSubcard('Marketing Platform Subscription', '120.00', 'business');
-      createExpenseSubcard('Client Dinner Consultation', '85.00', 'mixed');
-      createExpenseSubcard('Personal Gym Membership', '60.00', 'personal');
-      saveToLocalStorage();
+      renderStructure();
     }
-
-    addExpenseBtn.addEventListener('click', () => {
-      createExpenseSubcard('', '', 'unassigned');
-      saveToLocalStorage();
-    });
 
     document.addEventListener('click', () => {
       document.querySelectorAll('.strategy-dialog').forEach(d => d.classList.remove('active'));
