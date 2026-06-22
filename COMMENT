@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion Streamlined Feedback Widget</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ==========================================================================
+           1. DESIGN SYSTEM & ADAPTIVE THEME ENGINE
+           ========================================================================== */
+        :root {
+            --bg-canvas: transparent;
+            --bg-card: #ffffff;
+            --text-main: #1c1917;
+            --text-muted: #71717a;
+            --text-placeholder: #a1a1aa;
+            --border-card: rgba(228, 228, 231, 0.6);
+            --bg-input-field: #f4f4f5;
+            --star-active: #eab308;
+            --star-inactive: #e4e4e7;
+            --btn-bg: #18181b;
+            --btn-text: #ffffff;
+            --btn-hover: #27272a;
+            --bg-success: #f0fdf4;
+            --border-success: #bbf7d0;
+            --text-success: #15803d;
+
+            --transition-warp: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-fluid: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark-theme {
+            --bg-canvas: #191919; 
+            --bg-card: #202020;
+            --border-card: rgba(255, 255, 255, 0.07);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-placeholder: #4b5563;
+            --bg-input-field: #141414;
+            --star-inactive: #3f3f46;
+            --btn-bg: #ffffff;
+            --btn-text: #111111;
+            --btn-hover: #e4e4e7;
+            --bg-success: rgba(21, 128, 61, 0.15);
+            --border-success: rgba(21, 128, 61, 0.3);
+            --text-success: #4ade80;
+        }
+
+        /* ==========================================================================
+           2. STRUCTURE & WIREFRAME LAYOUT
+           ========================================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-canvas);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s ease;
+            overflow: hidden;
+        }
+
+        .widget-container {
+            width: 380px;
+            perspective: 1000px;
+        }
+
+        .premium-review-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            transform-style: preserve-3d;
+            will-change: transform;
+            transition: background-color 0.3s ease, border-color 0.3s ease, var(--transition-warp);
+        }
+
+        .card-header-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .stars-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .star-node {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            color: var(--star-inactive);
+            transition: transform 0.1s ease, color 0.15s ease;
+        }
+
+        .star-node:hover {
+            transform: scale(1.1);
+        }
+
+        .star-node.selected {
+            color: var(--star-active);
+        }
+
+        .input-bar-wrapper {
+            width: 100%;
+            background: var(--bg-input-field);
+            border-radius: 16px;
+            padding: 6px 6px 6px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            transition: var(--transition-fluid);
+            border: 1px solid transparent;
+        }
+
+        .input-bar-wrapper:focus-within {
+            border-color: rgba(120, 120, 120, 0.15);
+        }
+
+        .native-textarea {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: var(--text-main);
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 8px 0;
+            resize: none;
+            height: 36px;
+            font-family: inherit;
+        }
+
+        .native-textarea::placeholder {
+            color: var(--text-placeholder);
+        }
+
+        .submit-icon-button {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            outline: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-fluid);
+            flex-shrink: 0;
+        }
+
+        .submit-icon-button:hover {
+            background: var(--btn-hover);
+        }
+
+        /* ==========================================================================
+           3. ONE-TIME SUCCESS SCREEN STATE (THANKS BOX)
+           ========================================================================== */
+        .success-opinion-box {
+            display: none; 
+            background: var(--bg-success);
+            border: 1px solid var(--border-success);
+            color: var(--text-success);
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            animation: paneReveal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        .success-opinion-box svg {
+            margin-bottom: 8px;
+            color: var(--text-success);
+        }
+
+        .success-text-heading {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .success-text-sub {
+            font-size: 0.82rem;
+            opacity: 0.85;
+            font-weight: 500;
+        }
+
+        @keyframes paneReveal {
+            from { opacity: 0; transform: scale(0.95) translateY(6px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        @media (max-width: 480px) {
+            .widget-container { width: 100%; }
+            .premium-review-card { transform: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container">
+        <div class="premium-review-card" id="warpSurface">
+            
+            <div id="formInteractivePayload" style="display: flex; flex-direction: column; gap: 16px;">
+                <h2 class="card-display-header card-header-title">Leave a quick suggestion or review:</h2>
+
+                <div class="stars-row" id="starContainer">
+                    <svg class="star-node selected" data-score="1" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg class="star-node selected" data-score="2" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg class="star-node selected" data-score="3" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg class="star-node selected" data-score="4" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    <svg class="star-node" data-score="5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                </div>
+
+                <div class="input-bar-wrapper">
+                    <textarea id="commentTextarea" class="native-textarea" placeholder="Type your opinion here..." rows="1"></textarea>
+                    <button type="button" id="submitBtn" class="submit-icon-button" aria-label="Send feedback">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div id="successStateBox" class="success-opinion-box">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <div class="success-text-heading">Thanks for your opinion!</div>
+                <div class="success-text-sub">Your feedback has been appended to the dashboard.</div>
+            </div>
+
+        </div>
+    </div>
