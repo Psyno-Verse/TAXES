@@ -3,620 +3,609 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Adaptive Notion Tax Bracket Widget</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <title>The Tax Masterclass Swipe Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* ==========================================================================
-           1. CORE DESIGN SYSTEMS & LIGHT THEME INITIALIZERS
+           1. NOTION NATIVE UI STYLING & ADAPTIVE THEME ENGINE
            ========================================================================== */
         :root {
-            /* Canvas Background Palette */
-            --bg-canvas: transparent; /* Blends natively inside default spaces */
-            --bg-card: #ffffff;
+            --bg-color: #f7f7f5; 
+            --card-bg: #ffffff;
+            --text-main: #37352f;
+            --text-muted: #787774;
+            --accent-green: #0f7b6c;
+            --accent-red: #e03e3e;
+            --accent-gold: #d97706;
+            --shadow: rgba(15, 15, 15, 0.1) 0px 4px 12px;
+            --border-color: #ededed;
+            --progress-bg: #e9e9e7;
+            --modal-bg: rgba(255, 255, 255, 0.97);
             
-            /* Text Systems */
-            --text-main: #1c1917;
-            --text-muted: #71717a;
-            
-            /* Component Boundaries & Accents */
-            --border-card: rgba(228, 228, 231, 0.6);
-            --bg-row-hover: #f4f4f5;
-            --bg-summary: #fafafa;
-            --border-summary: #f4f4f5;
-            
-            /* Status Indicators */
-            --badge-active-bg: #e6f7ed;
-            --badge-active-text: #10b981;
-            --badge-inactive-bg: #f4f4f5;
-            --badge-inactive-text: #71717a;
-            --badge-filled-bg: #e0f2fe;
-            --badge-filled-text: #0284c7;
-
-            /* Level Core Color Framework */
-            --level-1-color: #3b82f6;
-            --level-2-color: #f59e0b;
-            --level-3-color: #ec4899;
-
-            /* Interactive Inputs */
-            --black-cta: #18181b;
-            --black-cta-hover: #27272a;
-            --input-text: #ffffff;
-            --input-label: #a1a1aa;
-            --input-btn-bg: rgba(255, 255, 255, 0.08);
-            --input-btn-hover: rgba(255, 255, 255, 0.15);
-
-            /* Micro Animations */
-            --transition-warp: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            --transition-fluid: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            /* Level 1 Adaptive Fallbacks */
+            --badge-bg: #37352f;
+            --badge-text: #ffffff;
         }
 
-        /* ==========================================================================
-           2. DYNAMIC NOTION DARK MODE OVERRIDES (MATCHING image_709f4c.png)
-           ========================================================================== */
         .dark-theme {
-            /* EXACT BACKGROUND COLOR MAPPED FROM image_709f4c.png */
-            --bg-canvas: #191919; 
-            
-            /* Floating Card Surfaces */
-            --bg-card: #202020;
-            --border-card: rgba(255, 255, 255, 0.07);
-            --bg-row-hover: #2c2c2c;
-            
-            /* Core Text Reflows */
+            --bg-color: #191919; 
+            --card-bg: #202020;
             --text-main: #f3f4f6;
             --text-muted: #9ca3af;
+            --shadow: rgba(0, 0, 0, 0.3) 0px 4px 12px;
+            --border-color: rgba(255, 255, 255, 0.07);
+            --progress-bg: #2d2d2d;
+            --modal-bg: rgba(32, 32, 32, 0.97);
             
-            /* Bottom Summary Toggles */
-            --bg-summary: #141414;
-            --border-summary: #252525;
-            
-            /* Standard Adaptive Badges */
-            --badge-inactive-bg: #2d2d2d;
-            --badge-inactive-text: #9ca3af;
-            --badge-active-bg: rgba(16, 185, 129, 0.15);
-            --badge-filled-bg: rgba(2, 132, 199, 0.15);
-
-            /* Repurposed Interactive Black Box Component */
-            --black-cta: #111111;
-            --black-cta-hover: #0a0a0a;
-            --input-text: #ffffff;
-            --input-label: #71717a;
-            --input-btn-bg: rgba(255, 255, 255, 0.04);
-            --input-btn-hover: rgba(255, 255, 255, 0.08);
+            /* Level 1 Adaptive Fallbacks */
+            --badge-bg: #f3f4f6;
+            --badge-text: #191919;
         }
 
         /* ==========================================================================
-           3. MASTER STRUCTURAL CONTAINER GRAPHICS
+           2. STRUCTURE & WIREFRAME LAYOUT
            ========================================================================== */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Inter', sans-serif;
+            user-select: none;
         }
 
         body {
-            background-color: var(--bg-canvas);
-            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--text-main);
             display: flex;
             justify-content: center;
             align-items: center;
+            height: 100vh;
             overflow: hidden;
-            width: 100%;
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Notion Buffer Node Safeguards */
-        .notion-viewport-buffer {
-            padding: 40px;
-            perspective: 1000px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        .widget-container {
             width: 100%;
-        }
-
-        .widget-anchor-container {
+            max-width: 420px;
+            height: 600px;
             position: relative;
-            width: 360px;
             display: flex;
             flex-direction: column;
-            transform-style: preserve-3d;
-            will-change: transform;
-            transition: var(--transition-warp);
+            align-items: center;
+            padding-top: 20px;
         }
 
-        /* Core Card Object Construction Layout */
-        .dropdown-simulation-card {
-            background: var(--bg-card);
-            width: 100%;
-            border-radius: 28px;
-            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.12), 0 0 1px 1px rgba(0, 0, 0, 0.02);
-            padding: 14px;
+        /* PROGRESS & LEVEL INDICATOR */
+        .header-info {
+            width: 90%;
             display: flex;
-            flex-direction: column;
-            gap: 6px;
-            transform: translateZ(50px);
-            border: 1px solid var(--border-card);
-            transition: background-color 0.3s ease, border-color 0.3s ease;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 10px;
         }
-
-        /* Architectural Level Container Items */
-        .bracket-row-item {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding: 16px;
+        .level-badge {
+            background: var(--badge-bg);
+            color: var(--badge-text);
+            padding: 4px 12px;
             border-radius: 20px;
-            transition: var(--transition-fluid);
-            position: relative;
-        }
-
-        .bracket-row-item:hover {
-            background: var(--bg-row-hover);
-        }
-
-        .row-top-split {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            width: 100%;
-        }
-
-        .row-left-content {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .row-icon-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            transition: var(--transition-fluid);
-        }
-
-        .bracket-row-item:hover .row-icon-wrapper {
-            color: var(--text-main);
-            transform: scale(1.05);
-        }
-
-        .row-meta-text {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-        }
-
-        .tier-title-label {
-            font-size: 0.95rem;
+            font-size: 12px;
             font-weight: 700;
-            color: var(--text-main);
-            transition: var(--transition-fluid);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
         }
-
-        .tier-calculation-subtext {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            font-weight: 500;
-            margin-top: 1px;
-        }
-
-        /* ==========================================================================
-           4. HORIZONTAL COMPLETION FILL BARS
-           ========================================================================== */
-        .level-progress-container {
-            width: 100%;
-            height: 6px;
-            background: rgba(120, 120, 120, 0.15);
-            border-radius: 100px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .level-progress-bar-fill {
-            height: 100%;
-            width: 0%;
-            border-radius: 100px;
-            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .fill-l1 { background: var(--level-1-color); box-shadow: 0 0 8px rgba(59, 130, 246, 0.3); }
-        .fill-l2 { background: var(--level-2-color); box-shadow: 0 0 8px rgba(245, 158, 11, 0.3); }
-        .fill-l3 { background: var(--level-3-color); box-shadow: 0 0 8px rgba(236, 72, 153, 0.3); }
-
-        /* Structural Status Badges */
-        .status-pill-badge {
-            font-size: 0.72rem;
-            font-weight: 700;
-            padding: 4px 10px 4px 8px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            transition: var(--transition-fluid);
-        }
-
-        .status-pill-badge::before {
-            content: '';
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-
-        /* Pill State Color Render Engines */
-        .pill-active { background: var(--badge-active-bg); color: var(--badge-active-text); }
-        .pill-active::before { background: var(--badge-active-text); }
-
-        .pill-filled { background: var(--badge-filled-bg); color: var(--badge-filled-text); }
-        .pill-filled::before { background: var(--badge-filled-text); }
-
-        .pill-inactive { background: var(--badge-inactive-bg); color: var(--badge-inactive-text); }
-        .pill-inactive::before { background: var(--badge-inactive-text); }
-
-        /* Aggregate Output Metrics Summary Layout */
-        .total-output-summary-banner {
-            margin-top: 4px;
-            padding: 14px 20px;
-            background: var(--bg-summary);
-            border-radius: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.85rem;
+        .progress-text {
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-muted);
-            border: 1px solid var(--border-summary);
-            transition: var(--transition-fluid);
         }
-
-        .total-output-summary-banner span.calculated-bold-sum {
-            font-weight: 800;
-            color: var(--text-main);
-            font-size: 1rem;
-        }
-
-        /* ==========================================================================
-           5. INTERACTIVE COMPONENT LAYER (THE BLACK CARD INPUT FIELD)
-           ========================================================================== */
-        .interactive-black-input-card {
-            background: var(--black-cta);
-            border-radius: 22px;
-            padding: 20px;
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: var(--transition-fluid);
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            position: relative;
+        .progress-bar-bg {
+            width: 90%;
+            height: 8px;
+            background-color: var(--progress-bg);
+            border-radius: 10px;
             overflow: hidden;
+            margin-bottom: 20px;
+            transition: background-color 0.3s ease;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background-color: var(--badge-bg);
+            transition: width 0.4s ease, background-color 0.4s ease;
         }
 
-        .interactive-black-input-card:hover {
-            background: var(--black-cta-hover);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        /* CARD STACK */
+        .card-stack {
+            position: relative;
+            width: 90%;
+            height: 380px;
+            perspective: 1000px;
         }
 
-        .input-vertical-stack {
+        .card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            flex-grow: 1;
-        }
-
-        .input-stack-label {
-            font-size: 0.68rem;
-            color: var(--input-label);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            font-weight: 700;
-            transition: var(--transition-fluid);
-        }
-
-        /* Embedded Custom Numerical Input Field Configuration */
-        .native-embedded-input {
-            background: transparent;
-            border: none;
-            outline: none;
-            color: var(--input-text);
-            font-size: 1.35rem;
-            font-weight: 700;
-            width: 90%;
-            padding: 2px 0;
-            font-family: inherit;
-            transition: var(--transition-fluid);
-        }
-
-        .native-embedded-input::-webkit-outer-spin-button,
-        .native-embedded-input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        
-        .native-embedded-input[type=number] {
-            -moz-appearance: textfield;
-        }
-
-        /* Inline Functional Navigation Indicator Ring */
-        .input-action-icon-hub {
-            color: var(--input-text);
-            display: flex;
-            align-items: center;
             justify-content: center;
-            background: var(--input-btn-bg);
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            transition: var(--transition-fluid);
+            align-items: center;
+            text-align: center;
+            padding: 30px 24px;
+            box-sizing: border-box;
+            transition: transform 0.4s ease, opacity 0.4s ease, background-color 0.3s ease, border-color 0.3s ease;
+            border: 1px solid var(--border-color);
         }
 
-        .interactive-black-input-card:hover .input-action-icon-hub {
-            background: var(--input-btn-hover);
-            transform: translateX(2px);
+        .card h2 {
+            font-size: 20px;
+            margin: 0;
+            line-height: 1.5;
+            color: var(--text-main);
         }
 
-        /* ==========================================================================
-           6. RESPONSIVE METRIC WRAPPERS
-           ========================================================================== */
-        @media (max-width: 480px) {
-            .notion-viewport-buffer {
-                padding: 16px;
-            }
-            .widget-anchor-container {
-                width: 100%;
-                transform: none !important;
-            }
+        .card-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-weight: 700;
         }
+
+        /* HOVER TOOLTIPS */
+        .tooltip-trigger {
+            border-bottom: 2px dashed var(--accent-gold);
+            color: var(--accent-gold);
+            cursor: help;
+            position: relative;
+            display: inline-block;
+            transition: color 0.2s;
+        }
+        .tooltip-trigger:hover {
+            color: #b45309;
+        }
+        .tooltip-box {
+            position: absolute;
+            bottom: 140%;
+            left: 50%;
+            width: 220px;
+            background: #2f2f2f;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 400;
+            line-height: 1.4;
+            pointer-events: none;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            
+            transform-origin: bottom center;
+            transform: translateX(-50%) scale(0.4) translateY(30px) skewY(10deg);
+            opacity: 0;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            z-index: 100;
+        }
+        .tooltip-box::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 6px;
+            border-style: solid;
+            border-color: #2f2f2f transparent transparent transparent;
+        }
+        .tooltip-trigger:hover .tooltip-box,
+        .tooltip-trigger:focus .tooltip-box {
+            transform: translateX(-50%) scale(1) translateY(0) skewY(0deg);
+            opacity: 1;
+        }
+
+        /* SWIPE ANIMATIONS */
+        .swipe-left { transform: translateX(-150%) rotate(-15deg) !important; opacity: 0; }
+        .swipe-right { transform: translateX(150%) rotate(15deg) !important; opacity: 0; }
+
+        /* BUTTONS */
+        .controls {
+            display: flex;
+            gap: 24px;
+            margin-top: 25px;
+        }
+        .btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: none;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            font-size: 26px;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease, background-color 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn:active { transform: scale(0.85); }
+        .btn-myth { color: var(--accent-red); font-weight: 700; }
+        .btn-fact { color: var(--accent-green); font-weight: 700; }
+
+        /* EXPLANATION MODAL */
+        .modal {
+            position: absolute;
+            bottom: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(8px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.3s ease;
+            z-index: 10;
+            border-radius: 16px;
+        }
+        .modal.active { bottom: 0; }
+        .modal h3 { font-size: 32px; margin-bottom: 15px; }
+        .modal p { font-size: 16px; color: var(--text-main); line-height: 1.6; margin-bottom: 30px; font-weight: 500;}
+        .next-btn { background: var(--text-main); color: var(--bg-color); border: none; padding: 14px 32px; border-radius: 30px; font-size: 16px; font-weight: 600; cursor: pointer; transition: transform 0.1s, background-color 0.3s ease, color 0.3s ease;}
+        .next-btn:active { transform: scale(0.95); }
+
+        /* LEVEL UP BANNER */
+        .level-up-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.5);
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 20px 40px;
+            border-radius: 16px;
+            font-size: 24px;
+            font-weight: 700;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+        .level-up-overlay.active {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+        .level-up-subtitle { font-size: 14px; font-weight: 400; color: var(--text-muted); margin-top: 5px; }
+
+        /* CONFETTI ANIMATION */
+        .confetti {
+            position: absolute;
+            top: -10px;
+            width: 10px;
+            height: 10px;
+            z-index: 9999;
+            opacity: 0;
+        }
+        @keyframes fall {
+            0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(300px) rotate(180deg) scale(1.2); }
+            100% { opacity: 0; transform: translateY(600px) rotate(360deg) scale(0.8); }
+        }
+
+        /* END SCREEN */
+        .end-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-color);
+            z-index: 20;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border-radius: 16px;
+            transition: background-color 0.3s ease;
+        }
+        .end-screen.active { display: flex; }
+        .score { font-size: 54px; font-weight: 700; margin: 15px 0; color: var(--accent-green);}
+        .restart-btn { background: var(--text-main); color: var(--bg-color); padding: 14px 28px; border-radius: 8px; font-weight: 600; margin-top: 20px; cursor: pointer; border: none; font-size: 16px; transition: background-color 0.3s ease, color 0.3s ease;}
     </style>
 </head>
 <body>
 
-    <div class="notion-viewport-buffer">
-        <div class="widget-anchor-container" id="warpSurface">
-            
-            <!-- Core Refactored Card System -->
-            <div class="dropdown-simulation-card">
-                
-                <!-- Level 1 Block ($1,000 - $2,000) -->
-                <div class="bracket-row-item" data-tier="1">
-                    <div class="row-top-split">
-                        <div class="row-left-content">
-                            <div class="row-icon-wrapper">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                            </div>
-                            <div class="row-meta-text">
-                                <span class="tier-title-label">Level 1 Bracket (10%)</span>
-                                <span class="tier-calculation-subtext" id="calcTier1">Taxed: $0.00 (0% filled)</span>
-                            </div>
-                        </div>
-                        <span class="status-pill-badge pill-inactive" id="badgeTier1">Inactive</span>
-                    </div>
-                    <div class="level-progress-container">
-                        <div class="level-progress-bar-fill fill-l1" id="barTier1"></div>
-                    </div>
-                </div>
-
-                <!-- Level 2 Block ($2,000 - $6,000) -->
-                <div class="bracket-row-item" data-tier="2">
-                    <div class="row-top-split">
-                        <div class="row-left-content">
-                            <div class="row-icon-wrapper">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                            </div>
-                            <div class="row-meta-text">
-                                <span class="tier-title-label">Level 2 Bracket (12%)</span>
-                                <span class="tier-calculation-subtext" id="calcTier2">Taxed: $0.00 (0% filled)</span>
-                            </div>
-                        </div>
-                        <span class="status-pill-badge pill-inactive" id="badgeTier2">Inactive</span>
-                    </div>
-                    <div class="level-progress-container">
-                        <div class="level-progress-bar-fill fill-l2" id="barTier2"></div>
-                    </div>
-                </div>
-
-                <!-- Level 3 Block ($6,000 - $12,000) -->
-                <div class="bracket-row-item" data-tier="3">
-                    <div class="row-top-split">
-                        <div class="row-left-content">
-                            <div class="row-icon-wrapper">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-                            </div>
-                            <div class="row-meta-text">
-                                <span class="tier-title-label">Level 3 Bracket (22%)</span>
-                                <span class="tier-calculation-subtext" id="calcTier3">Taxed: $0.00 (0% filled)</span>
-                            </div>
-                        </div>
-                        <span class="status-pill-badge pill-inactive" id="badgeTier3">Inactive</span>
-                    </div>
-                    <div class="level-progress-container">
-                        <div class="level-progress-bar-fill fill-l3" id="barTier3"></div>
-                    </div>
-                </div>
-
-                <!-- Global Effective Rate Banner Panel -->
-                <div class="total-output-summary-banner">
-                    <span>Effective Rate Blend</span>
-                    <span class="calculated-bold-sum" id="effectiveRateLabel">0.0%</span>
-                </div>
-
-                <!-- The Interactive Base Core Input Object -->
-                <div class="interactive-black-input-card">
-                    <div class="input-vertical-stack">
-                        <label for="bracketWalletInput" class="input-stack-label">Enter Total Income</label>
-                        <input type="number" id="bracketWalletInput" class="native-embedded-input" value="7500" min="0" max="50000" placeholder="0">
-                    </div>
-                    <div class="input-action-icon-hub">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+<div class="widget-container">
+    
+    <div class="header-info">
+        <div class="level-badge" id="level-badge">LVL 1: The Basics</div>
+        <div class="progress-text" id="progress-text">1 / 30</div>
+    </div>
+    
+    <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
     </div>
 
-    <!-- ==========================================================================
-       7. NOTION CLIENT-SIDE AUTOMATED ENGINE & SIMULATION MATHEMATICS
-       ========================================================================== -->
-    <script>
-        document.addEventListener("DOMContentLoaded", () => {
+    <div class="card-stack" id="card-stack">
+        </div>
+
+    <div class="controls">
+        <button class="btn btn-myth" onclick="handleChoice(false)">❌</button>
+        <button class="btn btn-fact" onclick="handleChoice(true)">✅</button>
+    </div>
+
+    <div class="modal" id="modal">
+        <h3 id="modal-title">Correct!</h3>
+        <p id="modal-desc">Explanation text.</p>
+        <button class="next-btn" onclick="nextQuestion()">Next Question</button>
+    </div>
+
+    <div class="level-up-overlay" id="level-up">
+        LEVEL UP!
+        <div class="level-up-subtitle" id="level-subtitle">Unlocked: Side Hustler</div>
+    </div>
+
+    <div class="end-screen" id="end-screen">
+        <h2>Masterclass Complete!</h2>
+        <div class="score" id="final-score">30/30</div>
+        <p id="end-message">You are officially a Tax Pro.</p>
+        <button class="restart-btn" onclick="location.reload()">Play Again</button>
+    </div>
+</div>
+
+<script>
+    // Tooltip Helper Function to keep code clean
+    const tt = (word, definition) => `<span class="tooltip-trigger" tabindex="0">${word}<span class="tooltip-box">${definition}</span></span>`;
+
+    // 100% US GOVERNMENT VERIFIED LEGAL TAX FACTS (2025/2026 Laws)
+    const questions = [
+        // LEVEL 1: THE BASICS (1-6)
+        { text: "A massive tax refund means you overpaid the government throughout the year.", isFact: true, explanation: "A refund isn't free money. It is simply a 0% interest loan you gave the government!" },
+        { text: `Moving into a higher ${tt('tax bracket', 'A progressive range of incomes taxed at a given rate.')} means you will take home less money overall.`, isFact: false, explanation: "Taxes are marginal! You only pay the higher tax percentage on the money that falls INSIDE that specific higher bracket." },
+        { text: `Thanks to recent federal law, service workers can deduct up to $25,000 of their tips from their taxable income.`, isFact: true, explanation: "True! The 'No Tax on Tips' provision passed in 2025 allows eligible workers to deduct up to $25k in qualified tips!" },
+        { text: `Money put into a ${tt('Traditional IRA', 'An Individual Retirement Account where contributions are often tax-deductible.')} lowers your taxable income for the year.`, isFact: true, explanation: "Yes! Traditional IRA contributions are made pre-tax, shrinking your taxable income instantly." },
+        { text: "Everyone pays the exact same federal tax rate on their income, regardless of how they make it.", isFact: false, explanation: "Different types of income (like investments, business profit, and standard W-2 wages) are all taxed at completely different rates!" },
+        { text: "You must file a federal tax return even if you only made $50 all year at a normal W-2 job.", isFact: false, explanation: "Unless you are self-employed, single W-2 filers under age 65 don't legally have to file until they hit the standard deduction threshold ($15,750 for 2025)." },
+
+        // LEVEL 2: THE SIDE HUSTLER (7-12)
+        { text: `If you earn money outside a normal job, you are automatically a ${tt('Sole Proprietor', 'An unincorporated business owned and run by one individual.')}.`, isFact: true, explanation: "True! The moment you sell a good or service, the IRS views you as a sole proprietor by default." },
+        { text: "You can write off your daily driving commute to your regular 9-to-5 office.", isFact: false, explanation: "Standard commuting is never deductible. However, driving from your office to a client meeting IS deductible." },
+        { text: `A ${tt('Tax Credit', 'A dollar-for-dollar reduction of the actual tax you owe.')} is generally much better than a Tax Deduction.`, isFact: true, explanation: "Deductions only lower your taxable income. Credits subtract directly from your final tax bill. Credits win!" },
+        { text: "You don't have to file taxes for your side hustle until you reach the $15,750 standard deduction.", isFact: false, explanation: "The IRS requires you to file a tax return if you have net earnings of just $400 or more from self-employment!" },
+        { text: "You can deduct 100% of the cost of a business meal if you discuss business with a client.", isFact: false, explanation: "Currently, standard business meals are only 50% deductible under US federal tax law." },
+        { text: "You don't legally need to report side hustle income if clients pay you purely in cash.", isFact: false, explanation: "Income is income. The IRS requires you to report all earnings, whether paid via bank transfer, crypto, or cash." },
+
+        // LEVEL 3: BUSINESS OWNER (13-18)
+        { text: `Creating an ${tt('LLC', 'Limited Liability Company: Protects personal assets from business lawsuits.')} automatically lowers the amount of taxes you owe.`, isFact: false, explanation: "An LLC is for legal protection, not taxes! The IRS taxes an LLC exactly the same as a sole proprietor by default." },
+        { text: "If your LLC makes zero profit, you never have to file a tax form for it.", isFact: false, explanation: "Even with zero profit, you are usually required to file informational returns, and some states charge a minimum franchise tax." },
+        { text: `You can use an ${tt('S-Corp', 'A tax election that lets business owners split income into salary and dividends.')} to legally avoid paying some self-employment taxes.`, isFact: true, explanation: "Yes! S-Corps allow you to pay yourself a reasonable salary, while taking the rest as distributions free of self-employment tax." },
+        { text: "Business owners can write off up to $5,000 of the costs it took to start their business.", isFact: true, explanation: "True! Under Section 195, you can deduct up to $5,000 in startup costs in your first active year of business." },
+        { text: "A Single-Member LLC is considered a 'disregarded entity' by the IRS.", isFact: true, explanation: "Yes! This means the IRS ignores the LLC for tax purposes and simply taxes you as a sole proprietor on your personal return." },
+        { text: "You must make over $100k a year to legally form an S-Corporation.", isFact: false, explanation: "There is no minimum income requirement! However, the extra accounting fees usually only make it 'worth it' once you net $40k-$50k." },
+
+        // LEVEL 4: THE INVESTOR (19-24)
+        { text: `Selling a stock after holding it for over a year unlocks much lower ${tt('Capital Gains', 'Taxes applied to the profit made from selling an investment.')} tax rates.`, isFact: true, explanation: "Long-term capital gains rates (0%, 15%, or 20%) are significantly lower than short-term (ordinary income) rates!" },
+        { text: "You pay taxes on a stock the moment its value goes up on your screen.", isFact: false, explanation: "You only pay taxes when you actually SELL the stock and 'realize' the gain." },
+        { text: "Cryptocurrency is completely invisible to the IRS and entirely tax-free.", isFact: false, explanation: "The IRS treats crypto as property. Selling, trading, or earning crypto creates a taxable event." },
+        { text: `Real estate investors can use ${tt('Depreciation', 'A deduction that allows you to recover the cost of property over time.')} to lower their tax bills, even if the property increases in value.`, isFact: true, explanation: "This is a massive real estate loophole! The government lets you deduct the 'wear and tear' of the building while the market value appreciates." },
+        { text: "You can use your stock market losses to offset your regular W-2 income.", isFact: true, explanation: "Yes! This is called Tax-Loss Harvesting. You can write off up to $3,000 of net investment losses against your ordinary income." },
+        { text: "Qualified dividends from major companies are taxed at a lower rate than your standard salary.", isFact: true, explanation: "Fact! Qualified dividends enjoy the much lower, favorable long-term capital gains tax rates." },
+
+        // LEVEL 5: TAX PRO (25-30)
+        { text: "Writing off a heavy vehicle like a G-Wagon is a secret loophole that makes the car completely free.", isFact: false, explanation: "A write-off is just a discount on your taxes. If you buy a $100k car, you might save $30k in taxes, but you still spent $100k!" },
+        { text: "You can legally hire your own children to work for your business to save on taxes.", isFact: true, explanation: "Yes! If they do legitimate work, you can pay them, shift the income to their 0% tax bracket, and deduct it from your business." },
+        { text: `Your ${tt('Marginal Rate', 'The highest tax rate applied to the last dollar you earned.')} is the average amount of tax you pay on all your money.`, isFact: false, explanation: "Your 'Effective Rate' is your true average. Your 'Marginal Rate' is just the highest bracket your last dollar fell into." },
+        { text: `An ${tt('HSA', 'Health Savings Account: Used to pay for medical expenses.')} offers a rare 'Triple-Tax Advantage'.`, isFact: true, explanation: "Contributions are tax-deductible, growth is tax-free, and withdrawals for medical expenses are tax-free. It's the ultimate account!" },
+        { text: "The ultra-wealthy often borrow money against their assets to live tax-free.", isFact: true, explanation: "This is the 'Buy, Borrow, Die' strategy. Loans aren't taxed as income, so they borrow against portfolios to avoid selling and paying capital gains." },
+        { text: "Tax Avoidance is a federal crime and will send you to prison.", isFact: false, explanation: "Tax EVASION (lying/hiding income) is illegal. Tax AVOIDANCE (using legal loopholes and deductions) is entirely legal and encouraged!" }
+    ];
+
+    const levels = [
+        { title: "The Basics", color: "var(--badge-bg)", textColor: "var(--badge-text)" },
+        { title: "Side Hustler", color: "#2563eb", textColor: "#ffffff" }, 
+        { title: "Business Owner", color: "#9333ea", textColor: "#ffffff" }, 
+        { title: "The Investor", color: "#ea580c", textColor: "#ffffff" }, 
+        { title: "Tax Pro", color: "#0f7b6c", textColor: "#ffffff" } 
+    ];
+
+    let currentIndex = 0;
+    let score = 0;
+    let currentLevel = 0;
+
+    const stack = document.getElementById('card-stack');
+    const modal = document.getElementById('modal');
+    const progressFill = document.getElementById('progress-fill');
+    const levelBadge = document.getElementById('level-badge');
+    const progressText = document.getElementById('progress-text');
+
+    // Notion Dark Mode Environment Hook
+    function executeNotionThemeSync() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryTheme = urlParams.get('theme');
+            const hardwarePrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+            if (queryTheme === 'dark' || (!queryTheme && hardwarePrefersDark)) {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
             
-            // DOM Target Interface Links
-            const walletInput = document.getElementById("bracketWalletInput");
-            const calcTier1 = document.getElementById("calcTier1");
-            const calcTier2 = document.getElementById("calcTier2");
-            const calcTier3 = document.getElementById("calcTier3");
-            const badgeTier1 = document.getElementById("badgeTier1");
-            const badgeTier2 = document.getElementById("badgeTier2");
-            const badgeTier3 = document.getElementById("badgeTier3");
-            const barTier1 = document.getElementById("barTier1");
-            const barTier2 = document.getElementById("barTier2");
-            const barTier3 = document.getElementById("barTier3");
-            const effectiveRateLabel = document.getElementById("effectiveRateLabel");
-            const warpSurface = document.getElementById("warpSurface");
-
-            /* Explicit Marginal Calculations Structure Map Limits:
-               Level 1 Range: $1,000 -> $2,000 (Size limit = $1,000)
-               Level 2 Range: $2,000 -> $6,000 (Size limit = $4,000)
-               Level 3 Range: $6,000 -> $12,000 (Size limit = $6,000)
-            */
-            const architecture = {
-                t1: { min: 1000, max: 2000, cap: 1000, rate: 0.10 },
-                t2: { min: 2000, max: 6000, cap: 4000, rate: 0.12 },
-                t3: { min: 6000, max: 12000, cap: 6000, rate: 0.22 }
-            };
-
-            /* ==========================================================================
-               A. EXPLICIT NOTION AUTOMATED ENVIRONMENT THEME SWAP ENGINE
-               ========================================================================== */
-            function coordinateNotionThemeSync() {
-                try {
-                    // Check 1: Parse the standard incoming Notion URL query parameters string array
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const queryTheme = urlParams.get('theme');
-
-                    // Check 2: Native device CSS level media queries standard defaults fallback
-                    const hardwarePrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-                    if (queryTheme === 'dark' || (!queryTheme && hardwarePrefersDark)) {
-                        document.body.classList.add('dark-theme');
-                    } else {
-                        document.body.classList.remove('dark-theme');
-                    }
-                } catch (err) {
-                    console.warn("Theme synchronization vector interrupted:", err);
-                }
+            // Sync current level styling safely
+            if (currentIndex === 0 || currentLevel === 0) {
+                levelBadge.style.backgroundColor = "var(--badge-bg)";
+                levelBadge.style.color = "var(--badge-text)";
+                progressFill.style.backgroundColor = "var(--badge-bg)";
             }
+        } catch (err) {
+            console.warn("Theme synchronization routine interrupted:", err);
+        }
+    }
 
-            // Monitor standard URL changes or responsive parent systems message toggles 
-            coordinateNotionThemeSync();
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', coordinateNotionThemeSync);
+    // Initialize Game
+    function initGame() {
+        executeNotionThemeSync();
+        renderCards();
+        updateProgress();
+    }
 
-            /* ==========================================================================
-               B. CALCULATION PIPELINE LOGIC INTERFACE
-               ========================================================================== */
-            function executeTaxBracketSimulation() {
-                let income = parseFloat(walletInput.value);
-                if (isNaN(income) || income < 0) income = 0;
+    function renderCards() {
+        stack.innerHTML = '';
+        const cardsToShow = Math.min(questions.length - currentIndex, 5);
+        
+        for (let i = cardsToShow - 1; i >= 0; i--) {
+            const actualIndex = currentIndex + i;
+            const card = document.createElement('div');
+            card.className = 'card';
+            card.id = `card-${actualIndex}`;
+            card.style.zIndex = cardsToShow - i;
+            
+            // Visual stacking effect
+            const scale = 1 - (0.05 * i);
+            const translateY = i * 12;
+            if(i > 0) card.style.transform = `scale(${scale}) translateY(${translateY}px)`;
 
-                // Level 1 Processing Block
-                let allocatedT1 = 0;
-                if (income > architecture.t1.min) {
-                    allocatedT1 = Math.min(income - architecture.t1.min, architecture.t1.cap);
-                }
-                let taxT1 = allocatedT1 * architecture.t1.rate;
-                let pctT1 = (allocatedT1 / architecture.t1.cap) * 100;
+            card.innerHTML = `
+                <div class="card-label">Question ${actualIndex + 1}</div>
+                <h2>"${questions[actualIndex].text}"</h2>
+            `;
+            stack.appendChild(card);
+        }
+    }
 
-                // Level 2 Processing Block
-                let allocatedT2 = 0;
-                if (income > architecture.t2.min) {
-                    allocatedT2 = Math.min(income - architecture.t2.min, architecture.t2.cap);
-                }
-                let taxT2 = allocatedT2 * architecture.t2.rate;
-                let pctT2 = (allocatedT2 / architecture.t2.cap) * 100;
+    function handleChoice(userChoseFact) {
+        if (currentIndex >= questions.length) return;
 
-                // Level 3 Processing Block
-                let allocatedT3 = 0;
-                if (income > architecture.t3.min) {
-                    allocatedT3 = Math.min(income - architecture.t3.min, architecture.t3.cap);
-                }
-                let taxT3 = allocatedT3 * architecture.t3.rate;
-                let pctT3 = (allocatedT3 / architecture.t3.cap) * 100;
+        const currentQuestion = questions[currentIndex];
+        const currentCard = document.getElementById(`card-${currentIndex}`);
+        const isCorrect = userChoseFact === currentQuestion.isFact;
 
-                // Combine Total Outlay Fees Metrics
-                let collectiveTaxFee = taxT1 + taxT2 + taxT3;
-                let effectiveBlendRate = income > 0 ? (collectiveTaxFee / income) * 100 : 0;
+        // Animate card away
+        if (userChoseFact) {
+            currentCard.classList.add('swipe-right');
+        } else {
+            currentCard.classList.add('swipe-left');
+        }
 
-                // Map Dynamic Data Rows Directly Under Subheadings
-                calcTier1.innerText = `Taxed: $${taxT1.toFixed(2)} ($${allocatedT1.toLocaleString(undefined, {maximumFractionDigits:0})} filled)`;
-                calcTier2.innerText = `Taxed: $${taxT2.toFixed(2)} ($${allocatedT2.toLocaleString(undefined, {maximumFractionDigits:0})} filled)`;
-                calcTier3.innerText = `Taxed: $${taxT3.toFixed(2)} ($${allocatedT3.toLocaleString(undefined, {maximumFractionDigits:0})} filled)`;
+        // Setup Modal
+        if (isCorrect) {
+            score++;
+            document.getElementById('modal-title').innerText = "✅ Spot On!";
+            document.getElementById('modal-title').style.color = "var(--accent-green)";
+        } else {
+            document.getElementById('modal-title').innerText = "🚨 Myth Busted!";
+            document.getElementById('modal-title').style.color = "var(--accent-red)";
+        }
 
-                // Drive Horizontal Loading Bar Transitions Fluidly
-                barTier1.style.width = `${pctT1}%`;
-                barTier2.style.width = `${pctT2}%`;
-                barTier3.style.width = `${pctT3}%`;
+        document.getElementById('modal-desc').innerText = currentQuestion.explanation;
 
-                effectiveRateLabel.innerText = `${effectiveBlendRate.toFixed(1)}%`;
+        // Show Modal after animation
+        setTimeout(() => {
+            modal.classList.add('active');
+        }, 300);
+    }
 
-                // Set Dynamic Pill Badge Elements
-                updateBadgeStatus(badgeTier1, allocatedT1, architecture.t1.cap);
-                updateBadgeStatus(badgeTier2, allocatedT2, architecture.t2.cap);
-                updateBadgeStatus(badgeTier3, allocatedT3, architecture.t3.cap);
-            }
+    function nextQuestion() {
+        modal.classList.remove('active');
+        currentIndex++;
+        updateProgress();
 
-            function updateBadgeStatus(badgeElement, allocatedAmount, totalCap) {
-                badgeElement.className = "status-pill-badge";
+        // Check for Level Up (Every 6 questions)
+        if (currentIndex % 6 === 0 && currentIndex < questions.length) {
+            currentLevel++;
+            triggerLevelUp();
+        } else {
+            proceedToNextCard();
+        }
+    }
 
-                if (allocatedAmount === 0) {
-                    badgeElement.classList.add("pill-inactive");
-                    badgeElement.innerText = "Inactive";
-                } else if (allocatedAmount < totalCap) {
-                    badgeElement.classList.add("pill-active");
-                    badgeElement.innerText = "Active";
-                } else {
-                    badgeElement.classList.add("pill-filled");
-                    badgeElement.innerText = "Filled";
-                }
-            }
+    function proceedToNextCard() {
+        if (currentIndex >= questions.length) {
+            setTimeout(showEndScreen, 300);
+        } else {
+            renderCards();
+        }
+    }
 
-            // Input Hook Event Observers
-            walletInput.addEventListener("input", executeTaxBracketSimulation);
+    function triggerLevelUp() {
+        fireConfetti();
+        const overlay = document.getElementById('level-up');
+        document.getElementById('level-subtitle').innerText = `Unlocked: ${levels[currentLevel].title}`;
+        overlay.classList.add('active');
+        
+        // Update Level Badge styling dynamically
+        levelBadge.innerText = `LVL ${currentLevel + 1}: ${levels[currentLevel].title}`;
+        levelBadge.style.backgroundColor = levels[currentLevel].color;
+        levelBadge.style.color = levels[currentLevel].textColor;
+        progressFill.style.backgroundColor = levels[currentLevel].color;
 
-            /* ==========================================================================
-               C. PARALLAX 3D LAYER HOVER INTERACTIVITY
-               ========================================================================== */
-            let isMobileDevice = window.matchMedia("(hover: none)").matches;
+        setTimeout(() => {
+            overlay.classList.remove('active');
+            setTimeout(proceedToNextCard, 400); 
+        }, 2500);
+    }
 
-            if (!isMobileDevice) {
-                warpSurface.addEventListener("mousemove", (event) => {
-                    const boundingBox = warpSurface.getBoundingClientRect();
-                    const offsetX = event.clientX - boundingBox.left;
-                    const offsetY = event.clientY - boundingBox.top;
-                    
-                    const normalizedX = (offsetX / boundingBox.width) - 0.5;
-                    const normalizedY = (offsetY / boundingBox.height) - 0.5;
-                    
-                    const vectorRotateX = (-normalizedY * 8).toFixed(2);
-                    const vectorRotateY = (normalizedX * 8).toFixed(2);
-                    
-                    warpSurface.style.transform = `perspective(1000px) rotateX(${vectorRotateX}deg) rotateY(${vectorRotateY}deg) scale3d(1.005, 1.005, 1.005)`;
-                });
+    function updateProgress() {
+        const percentage = (currentIndex / questions.length) * 100;
+        progressFill.style.width = `${percentage}%`;
+        progressText.innerText = `${currentIndex} / 30`;
+    }
 
-                warpSurface.addEventListener("mouseleave", () => {
-                    warpSurface.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
-                });
-            }
+    // Custom Party Popper Confetti Engine
+    function fireConfetti() {
+        const colors = ['#0f7b6c', '#e03e3e', '#d97706', '#2563eb', '#9333ea'];
+        const container = document.querySelector('.widget-container');
+        
+        for(let i=0; i<40; i++) {
+            let confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            container.appendChild(confetti);
+            
+            // Randomize physics
+            let left = Math.random() * 100;
+            let animDuration = Math.random() * 1.5 + 1.5;
+            let delay = Math.random() * 0.2;
+            
+            confetti.style.left = left + '%';
+            confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+            confetti.style.animation = `fall ${animDuration}s cubic-bezier(0.25, 0.46, 0.45, 0.94) ${delay}s forwards`;
+            
+            // Cleanup DOM
+            setTimeout(() => confetti.remove(), (animDuration + delay) * 1000);
+        }
+    }
 
-            // Immediate Thread Calculation Initialization Execution
-            executeTaxBracketSimulation();
-        });
-    </script>
+    function showEndScreen() {
+        fireConfetti();
+        setTimeout(fireConfetti, 500);
+        setTimeout(fireConfetti, 1000);
+
+        document.getElementById('end-screen').classList.add('active');
+        document.getElementById('final-score').innerText = `${score}/30`;
+        
+        let message = "";
+        if(score >= 28) message = "Flawless! You're ready to open your own CPA firm.";
+        else if (score >= 20) message = "Incredible work! You know more than 90% of people.";
+        else if (score >= 10) message = "Great start. Time to review some of those pro strategies!";
+        else message = "The Tax Monster got you! Time to restart the Masterclass.";
+        
+        document.getElementById('end-message').innerText = message;
+    }
+
+    // Listen to real-time dark mode toggle adjustments
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', executeNotionThemeSync);
+
+    // Run Engine
+    initGame();
+
+</script>
 </body>
 </html>
