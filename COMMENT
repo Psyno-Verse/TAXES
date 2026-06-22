@@ -255,3 +255,115 @@
 
         </div>
     </div>
+
+    <!-- ==========================================================================
+       4. CLIENT RUNTIME SCRIPT & NOTION TRANSMITTER PIPELINE
+       ========================================================================== */ -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            
+            // Your Make.com URL endpoint
+            const NOTION_WEBHOOK_URL = "https://hook.eu1.make.com/fatrog3rhnkhc24kcxao7go7u5woahra";
+
+            // UI Elements
+            const warpSurface = document.getElementById("warpSurface");
+            const starContainer = document.getElementById("starContainer");
+            const commentTextarea = document.getElementById("commentTextarea");
+            const submitBtn = document.getElementById("submitBtn");
+            const formInteractivePayload = document.getElementById("formInteractivePayload");
+            const successStateBox = document.getElementById("successStateBox");
+
+            let currentScore = 4;
+
+            // Notion Theme Detector
+            function executeNotionThemeSync() {
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const queryTheme = urlParams.get('theme');
+                    const hardwarePrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+                    if (queryTheme === 'dark' || (!queryTheme && hardwarePrefersDark)) {
+                        document.body.classList.add('dark-theme');
+                    } else {
+                        document.body.classList.remove('dark-theme');
+                    }
+                } catch (err) {
+                    console.warn("Theme synchronization routine interrupted:", err);
+                }
+            }
+            executeNotionThemeSync();
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', executeNotionThemeSync);
+
+            // Star Rating Interactions
+            starContainer.addEventListener("click", (e) => {
+                const targetStar = e.target.closest(".star-node");
+                if (!targetStar) return;
+
+                currentScore = parseInt(targetStar.getAttribute("data-score"), 10);
+                
+                const starNodes = starContainer.querySelectorAll(".star-node");
+                starNodes.forEach((node, idx) => {
+                    if (idx < currentScore) {
+                        node.setAttribute("fill", "currentColor");
+                        node.classList.add("selected");
+                    } else {
+                        node.setAttribute("fill", "none");
+                        node.classList.remove("selected");
+                    }
+                });
+            });
+
+            // Post Data Stream Routine
+            function packageAndSendFeedback() {
+                const commentText = commentTextarea.value.trim();
+                if (!commentText) return; 
+
+                const dataPayload = {
+                    rating: currentScore,
+                    comment: commentText,
+                    submittedAt: new Date().toISOString()
+                };
+
+                // Instant UI state switch to Thanks Box
+                formInteractivePayload.style.display = "none";
+                successStateBox.style.display = "block";
+
+                // Push payload live to Make webhook gateway
+                fetch(NOTION_WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dataPayload)
+                })
+                .then(res => console.log("Data pushed downstream successfully:", res.status))
+                .catch(err => console.error("Network connection interruption:", err));
+            }
+
+            // Click Event Listener
+            submitBtn.addEventListener("click", packageAndSendFeedback);
+            
+            // Enter Key Listener
+            commentTextarea.addEventListener("keydown", (e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    packageAndSendFeedback();
+                }
+            });
+
+            // Card 3D Tilt Effect
+            if (!window.matchMedia("(hover: none)").matches) {
+                warpSurface.addEventListener("mousemove", (e) => {
+                    const boundingBox = warpSurface.getBoundingClientRect();
+                    const normalizedX = ((e.clientX - boundingBox.left) / boundingBox.width) - 0.5;
+                    const normalizedY = ((e.clientY - boundingBox.top) / boundingBox.height) - 0.5;
+                    
+                    warpSurface.style.transform = `perspective(1000px) rotateX(${(-normalizedY * 6).toFixed(2)}deg) rotateY(${(normalizedX * 6).toFixed(2)}deg) scale3d(1.005, 1.005, 1.005)`;
+                });
+
+                warpSurface.addEventListener("mouseleave", () => {
+                    warpSurface.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+                });
+            }
+        });
+    </script>
+</body>
+</html>
