@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S-Corp Matrix Tracker</title>
+  <style>
+    /* Notion Page Theme Integration Variables */
+    :root {
+      --notion-bg: #191919;
+      --card-bg: #202020;
+      --subcard-default: #2c2c2c;
+      --text-main: #ffffff;
+      --text-sub: #9b9b9b;
+      --border-color: #373737;
+      
+      /* S-Corp Tax Strategy Colors */
+      --color-business: #7c4dff;     /* Purple */
+      --color-personal: #ff4a6b;     /* Pinkish Red */
+      --color-mixed: #00bcd4;        /* Teal */
+      --color-w2: #ff9800;           /* Amber */
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --notion-bg: #ffffff;
+        --card-bg: #f7f7f5;
+        --subcard-default: #ededeb;
+        --text-main: #37352f;
+        --text-sub: #787774;
+        --border-color: #e9e9e6;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--notion-bg);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Main Frame inspired by image_7eb70c.png */
+    .tracker-card {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 450px;
+      border-radius: 32px;
+      padding: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      border: 1px solid var(--border-color);
+      perspective: 1000px;
+      transition: transform 0.1s ease;
+    }
+
+    .tracker-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .tracker-title {
+      color: var(--text-main);
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .add-btn {
+      background: var(--subcard-default);
+      border: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .add-btn:hover {
+      background: var(--border-color);
+      transform: scale(1.05);
+    }
+
+    .add-btn svg {
+      fill: var(--text-main);
+      width: 20px;
+      height: 20px;
+    }
+
+    .expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .expense-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* UI Icon Container with Custom Tooltip Properties */
+    .strategy-icon-wrapper {
+      width: 46px;
+      height: 46px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      border-radius: 14px;
+      background: var(--subcard-default);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .strategy-icon-wrapper:hover {
+      background: var(--border-color);
+      transform: scale(1.08);
+    }
+
+    .strategy-icon-wrapper svg {
+      width: 22px;
+      height: 22px;
+      transition: fill 0.3s ease;
+    }
+
+    /* ELI5 Tooltip Box styling */
+    .strategy-icon-wrapper::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%) scale(0.9);
+      background: #111111;
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 500;
+      line-height: 1.4;
+      width: 180px;
+      text-align: center;
+      pointer-events: none;
+      opacity: 0;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+      transition: all 0.15s ease;
+      z-index: 200;
+    }
+
+    .strategy-icon-wrapper:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* Subcard Layout */
+    .expense-subcard {
+      flex: 1;
+      border-radius: 18px;
+      padding: 14px 18px;
+      background-color: var(--subcard-default);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease, box-shadow 0.3s ease;
+    }
+
+    /* Enforce High Contrast White Text configurations */
+    .expense-subcard.business,
+    .expense-subcard.personal,
+    .expense-subcard.mixed,
+    .expense-subcard.w2,
+    .expense-subcard.unassigned {
+      color: #ffffff !important;
+    }
+
+    .expense-subcard.unassigned { background-color: var(--subcard-default); }
+    .expense-subcard.business { background-color: var(--color-business); }
+    .expense-subcard.personal { background-color: var(--color-personal); }
+    .expense-subcard.mixed { background-color: var(--color-mixed); }
+    .expense-subcard.w2 { background-color: var(--color-w2); }
+
+    .expense-input {
+      background: transparent;
+      border: none;
+      color: #ffffff !important;
+      font-size: 15px;
+      font-weight: 600;
+      outline: none;
+      width: 90%; /* Leaves space for the delete action */
+    }
+
+    .expense-input::placeholder {
+      color: rgba(255, 255, 255, 0.55);
+    }
+
+    /* Meta details row layout updates */
+    .meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
+    }
+
+    /* Upgraded Money Input Box Container */
+    .amount-box-wrapper {
+      background: rgba(255, 255, 255, 0.15);
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .amount-box-wrapper span {
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffffff;
+    }
+
+    .amount-input {
+      background: transparent;
+      border: none;
+      color: #ffffff !important;
+      font-size: 15px;
+      font-weight: 700;
+      outline: none;
+      width: 75px;
+    }
+
+    .amount-input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Delete Cross Button Style */
+    .delete-card-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      width: 20px;
+      height: 20px;
+    }
+
+    .expense-subcard:hover .delete-card-btn {
+      opacity: 0.6;
+    }
+
+    .delete-card-btn:hover {
+      opacity: 1 !important;
+      transform: scale(1.15);
+    }
+
+    .delete-card-btn svg {
+      fill: #ffffff;
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Strategy Chooser Dialog Panel */
+    .strategy-dialog {
+      position: absolute;
+      left: 0px;
+      top: 52px;
+      background: #252525;
+      border: 1px solid #3c3c3c;
+      border-radius: 14px;
+      padding: 8px;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      width: 250px;
+    }
+
+    .strategy-dialog.active {
+      display: flex;
+      animation: popIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.85); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .dialog-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .dialog-option:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tracker-card" id="mainCard">
+    <div class="tracker-header">
+      <div class="tracker-title">S-Corp Matrix</div>
+      <button class="add-btn" id="addExpenseBtn">
+        <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+      </button>
+    </div>
+
+    <div class="expense-list" id="expenseList">
+      <!-- Cards render programmatically here -->
+    </div>
+  </div>
+
+  <script>
+    const expenseList = document.getElementById('expenseList');
+    const addExpenseBtn = document.getElementById('addExpenseBtn');
+    const mainCard = document.getElementById('mainCard');
+
+    // SVGs for Strategy UI Shapes
+    const ICONS = {
+      unassigned: `<svg viewBox="0 0 24 24" fill="#888"><circle cx="12" cy="12" r="10" stroke="#888" stroke-width="2" fill="none"/><path d="M12 8v8M8 12h8" stroke="#888" stroke-width="2"/></svg>`,
+      business: `<svg viewBox="0 0 24 24" fill="var(--color-business)"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>`,
+      personal: `<svg viewBox="0 0 24 24" fill="var(--color-personal)"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`,
+      mixed: `<svg viewBox="0 0 24 24" fill="var(--color-mixed)"><path d="M17 17h2v-4h-4v2h1.59L13 18.59l-4.59-4.59L10 12.41 11.41 13.82 15.24 10H13V8h4v4h-2V9.41l-4.59 4.59-4.59-4.59L7.41 8 12 12.59 15.59 9H14V7h5v5h-2V9.41z"/></svg>`,
+      w2: `<svg viewBox="0 0 24 24" fill="var(--color-w2)"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89-2 2-2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>`
+    };
+
+    // ELI5 Definitions & Strategic Context Placeholders
+    const STRATEGIES = {
+      unassigned: { 
+        class: 'unassigned', 
+        icon: ICONS.unassigned, 
+        placeholder: 'What did you buy?',
+        tooltip: 'Tap me to pick what kind of expense this is!' 
+      },
+      business: { 
+        class: 'business', 
+        icon: ICONS.business, 
+        placeholder: 'e.g., Software, office materials, ads...',
+        tooltip: 'The company piggy bank pays for this completely because it helps your job make money!' 
+      },
+      personal: { 
+        class: 'personal', 
+        icon: ICONS.personal, 
+        placeholder: 'e.g., Groceries, fun trips, gym membership...',
+        tooltip: 'Your own personal pocket money pays for this because it is for fun, not for work!' 
+      },
+      mixed: { 
+        class: 'mixed', 
+        icon: ICONS.mixed, 
+        placeholder: 'e.g., Phone bill, home internet, business mileage...',
+        tooltip: 'Part for work and part for fun! We split the cost safely down the middle.' 
+      },
+      w2: { 
+        class: 'w2', 
+        icon: ICONS.w2, 
+        placeholder: 'e.g., Owner salary payment, payroll tax...',
+        tooltip: 'This is the special official paycheck reward your business gives you for working hard!' 
+      }
+    };
+
+    // Card Level Warp Matrix Rotation Mechanics
+    mainCard.addEventListener('mousemove', (e) => {
+      const rect = mainCard.getBoundingClientRect();
+      const x = e.clientX - rect.left - (rect.width / 2);
+      const y = e.clientY - rect.top - (rect.height / 2);
+      mainCard.style.transform = `rotateX(${-y * 0.025}deg) rotateY(${x * 0.025}deg)`;
+    });
+
+    mainCard.addEventListener('mouseleave', () => {
+      mainCard.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    });
+
+    // Save Data Array to local storage
+    function saveToLocalStorage() {
+      const rows = document.querySelectorAll('.expense-row');
+      const dataToSave = [];
+      
+      rows.forEach(row => {
+        const descInput = row.querySelector('.expense-input');
+        const amountInput = row.querySelector('.amount-input');
+        const subcard = row.querySelector('.expense-subcard');
+        
+        // Find strategic key by checking active classes
+        let strategyKey = 'unassigned';
+        for (const key in STRATEGIES) {
+          if (subcard.classList.contains(STRATEGIES[key].class)) {
+            strategyKey = key;
+            break;
+          }
+        }
+
+        dataToSave.push({
+          description: descInput.value,
+          amount: amountInput.value,
+          strategyKey: strategyKey
+        });
+      });
+
+      localStorage.setItem('scorp_matrix_expenses', JSON.stringify(dataToSave));
+    }
+
+    function createExpenseSubcard(description = '', amount = '', strategyKey = 'unassigned') {
+      const row = document.createElement('div');
+      row.className = 'expense-row';
+
+      row.innerHTML = `
+        <div class="strategy-icon-wrapper" data-tooltip="${STRATEGIES[strategyKey].tooltip}">
+          ${STRATEGIES[strategyKey].icon}
+        </div>
+        
+        <div class="expense-subcard ${STRATEGIES[strategyKey].class}">
+          <button class="delete-card-btn" title="Delete Expense Allocation">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+          <input type="text" class="expense-input" placeholder="${STRATEGIES[strategyKey].placeholder}" value="${description}">
+          <div class="meta-row">
+            <span>Strategy Classification</span>
+            <div class="amount-box-wrapper">
+              <span>$</span>
+              <input type="text" class="amount-input" placeholder="0.00" value="${amount}">
+            </div>
+          </div>
+        </div>
+
+        <div class="strategy-dialog">
+          <div class="dialog-option" data-strategy="business">
+            <div class="color-dot" style="background: var(--color-business)"></div> Business Allocation (Purple)
+          </div>
+          <div class="dialog-option" data-strategy="personal">
+            <div class="color-dot" style="background: var(--color-personal)"></div> Personal / Draw (Pink-Red)
+          </div>
+          <div class="dialog-option" data-strategy="mixed">
+            <div class="color-dot" style="background: var(--color-mixed)"></div> Mixed Split Accountable (Teal)
+          </div>
+          <div class="dialog-option" data-strategy="w2">
+            <div class="color-dot" style="background: var(--color-w2)"></div> W-2 Payroll Matrix (Amber)
+          </div>
+        </div>
+      `;
+
+      const iconWrapper = row.querySelector('.strategy-icon-wrapper');
+      const dialog = row.querySelector('.strategy-dialog');
+      const subcard = row.querySelector('.expense-subcard');
+      const descInput = row.querySelector('.expense-input');
+      const amountInput = row.querySelector('.amount-input');
+      const deleteBtn = row.querySelector('.delete-card-btn');
+
+      // Sync changes to persistence storage framework instantly
+      descInput.addEventListener('input', saveToLocalStorage);
+      amountInput.addEventListener('input', saveToLocalStorage);
+
+      // Delete Row Button Action
+      deleteBtn.addEventListener('click', () => {
+        row.style.opacity = '0';
+        row.style.transform = 'scale(0.8) translateY(-10px)';
+        row.style.transition = 'all 0.2s ease';
+        setTimeout(() => {
+          row.remove();
+          saveToLocalStorage();
+        }, 200);
+      });
+
+      // Click Icon to display option box
+      iconWrapper.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.querySelectorAll('.strategy-dialog').forEach(d => {
+          if (d !== dialog) d.classList.remove('active');
+        });
+        dialog.classList.toggle('active');
+      });
+
+      // Switch Class Allocations and Adjust Strategy Placeholders Dynamically
+      dialog.querySelectorAll('.dialog-option').forEach(option => {
+        option.addEventListener('click', () => {
+          const strategy = option.getAttribute('data-strategy');
+          
+          subcard.className = 'expense-subcard';
+          subcard.classList.add(STRATEGIES[strategy].class);
+          
+          // Apply custom text context placeholders
+          descInput.placeholder = STRATEGIES[strategy].placeholder;
+          
+          iconWrapper.innerHTML = STRATEGIES[strategy].icon;
+          iconWrapper.setAttribute('data-tooltip', STRATEGIES[strategy].tooltip);
+          
+          dialog.classList.remove('active');
+          saveToLocalStorage();
+        });
+      });
+
+      // Interactive Sub-Card Transform Animation 
+      subcard.addEventListener('mousemove', (e) => {
+        const bounds = subcard.getBoundingClientRect();
+        const mouseX = e.clientX - bounds.left;
+        const mouseY = e.clientY - bounds.top;
+        
+        const paramX = (mouseX / bounds.width) - 0.5;
+        const paramY = (mouseY / bounds.height) - 0.5;
+        
+        subcard.style.transform = `perspective(400px) scale(1.02) rotateY(${paramX * 10}deg) rotateX(${-paramY * 10}deg)`;
+      });
+
+      subcard.addEventListener('mouseleave', () => {
+        subcard.style.transform = 'perspective(400px) scale(1) rotateY(0deg) rotateX(0deg)';
+      });
+
+      expenseList.appendChild(row);
+    }
+
+    // Load Data Initialization Strategy Loop
+    function initTracker() {
+      const storedData = localStorage.getItem('scorp_matrix_expenses');
+      
+      if (storedData) {
+        const parsed = JSON.parse(storedData);
+        if (parsed.length > 0) {
+          parsed.forEach(item => {
+            createExpenseSubcard(item.description, item.amount, item.strategyKey);
+          });
+          return;
+        }
+      }
+      
+      // Default fallback matrix config if storage cache empty
+      createExpenseSubcard('Marketing Platform Subscription', '120.00', 'business');
+      createExpenseSubcard('Client Dinner Consultation', '85.00', 'mixed');
+      createExpenseSubcard('Personal Gym Membership', '60.00', 'personal');
+      saveToLocalStorage();
+    }
+
+    addExpenseBtn.addEventListener('click', () => {
+      createExpenseSubcard('', '', 'unassigned');
+      saveToLocalStorage();
+    });
+
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.strategy-dialog').forEach(d => d.classList.remove('active'));
+    });
+
+    // Start Tracker Flow
+    initTracker();
+  </script>
+</body>
+</html>
