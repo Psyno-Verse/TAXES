@@ -467,7 +467,10 @@
     let baseScrollLeft;
 
     matrixWrapper.addEventListener('mousedown', (e) => {
-      if (e.target !== matrixWrapper) return;
+      // Direct exclusion engine: Do not engage scroll if interacting with explicit structural nodes
+      if (e.target.closest('input, button, .strategy-icon-wrapper, .strategy-dialog')) {
+        return;
+      }
       
       isDraggingBackground = true;
       matrixWrapper.classList.add('dragging');
